@@ -5,11 +5,15 @@ LDFLAGS=-l graph -L Graphique -l SDL -l SDL_ttf
 
 default: $(TARGET)
 
-main.o : main.c
+	
+main.o : main.c  ../Listechainee/Listechainee.h
 	clang $(CFLAGS) -c main.c
 
-$(TARGET) : main.o
-	clang main.o -o $(TARGET) $(LDFLAGS)
+Listechainee.o : ../Listechainee/Listechainee.c ../Listechainee/Listechainee.h
+	clang $(CFLAGS) -c ../Listechainee/Listechainee.c
+	
+$(TARGET) :  main.o Listechainee.o
+	clang main.o  Listechainee.o -o $(TARGET) $(LDFLAGS)
 
 .PHONY: clean
 clean:
