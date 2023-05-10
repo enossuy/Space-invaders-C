@@ -24,19 +24,22 @@ typedef struct entity {
 typedef struct Node {
     entity_t entity;
     struct Node* next_entity;
-} Node;
+} Node_t;
+
 
 typedef struct entity_list {
-    Node* head;
+    Node_t* head;
     int size;
 } entity_list_t;
 
+
 entity_list_t* createLinkedList();
 bool isEmpty(entity_list_t* list);
-void push_to_head(entity_list_t* list, entity_t entity);
+void push_to_head(entity_list_t* list, int x, int y, int id, int directory);
+
 void pop(entity_list_t list, int entity) ;
 
-void addToEnd(entity_list_t* list, int x, int y, int id);
+void addToEnd(entity_list_t* list, int x, int y, int id,int dir);
 
 
 /* Add a node to the end of the linked list */
