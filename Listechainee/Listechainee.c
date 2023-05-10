@@ -31,6 +31,37 @@ void push_to_head(entity_list_t* list, entity_t entity) {
     list->head = newNode;
     list->size++;
 }
+void addToEnd(entity_list_t* list, int x, int y, int id) {
+    // Allocate memory for new node and entity
+    Node* newNode = (Node*) malloc(sizeof(Node));
+    entity_t newEntity;
+    
+    // Populate new entity with given values
+    newEntity.x_coordinates = x;
+    newEntity.y_coordinates = y;
+    newEntity.entity_id = id;
+    
+    // Assign new entity to new node
+    newNode->entity = newEntity;
+    newNode->next_entity = NULL;
+    
+    // If list is empty, set new node as head
+    if (list->head == NULL) {
+        list->head = newNode;
+    } else {
+        // Find last node in list
+        Node* lastNode = list->head;
+        while (lastNode->next_entity != NULL) {
+            lastNode = lastNode->next_entity;
+        }
+        
+        // Add new node to end of list
+        lastNode->next_entity = newNode;
+    }
+    
+    // Increment list size
+    list->size++;
+}
 
 
 

@@ -1,13 +1,24 @@
 #ifndef __LISTECHAINEE_H__
 #define __LISTECHAINEE_H__
 
+#include <stdbool.h>
 
-typedef struct {
+typedef struct entity {
     int x_coordinates;
     int y_coordinates;
+    int entity_id;
+    int color;
+    int points;
     int speed;
-    int direction;
-    int points;/*1 for right, -1 for left*/
+    int direction; /* 1 for right, -1 for left */
+    int health; 
+    unsigned int killed;
+    int state;
+    int state_speed;
+    int state_time;
+    int alive;
+    int shots;
+    int level;
 } entity_t;
 
 typedef struct Node {
@@ -25,6 +36,10 @@ bool isEmpty(entity_list_t* list);
 void push_to_head(entity_list_t* list, entity_t entity);
 void pop(entity_list_t list, int entity) ;
 
+void addToEnd(entity_list_t* list, int x, int y, int id);
+
+
+/* Add a node to the end of the linked list */
 
 
 
