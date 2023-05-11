@@ -7,13 +7,13 @@ default: $(TARGET)
 
 	
 main.o : main.c  ../Listechainee/Listechainee.h
-	clang $(CFLAGS) -c main.c
+	$(CC) $(CFLAGS) -c main.c
 
 Listechainee.o : ../Listechainee/Listechainee.c ../Listechainee/Listechainee.h
-	clang $(CFLAGS) -c ../Listechainee/Listechainee.c
+	$(CC) $(CFLAGS) -c ../Listechainee/Listechainee.c
 	
 $(TARGET) :  main.o Listechainee.o
-	clang main.o  Listechainee.o -o $(TARGET) $(LDFLAGS)
+	$(CC) main.o  Listechainee.o -o $(TARGET) $(LDFLAGS)
 
 .PHONY: clean
 clean:

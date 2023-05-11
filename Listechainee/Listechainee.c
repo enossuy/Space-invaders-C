@@ -66,23 +66,36 @@ void addToEnd(entity_list_t* list, int x, int y, int id, int dir) {
 }
 
 
-void pop(entity_list_t* list, int x, int y) {
-    Node_t* curr = list->head;
-    Node_t* prev = NULL;
-
-    while (curr != NULL) {
-        if (curr->entity.x_coordinates == x && curr->entity.y_coordinates == y) {
-            if (prev == NULL) { // Case where the first node is to be removed
-                list->head = curr->next_entity;
+void pop(entity_list_t* list, entity_t entity) {
+    if (list->head == NULL) {
+        // If the list is empty, return without doing anything
+        return;
+    }
+    
+    Node_t* current_node = list->head;
+    Node_t* previous_node = NULL;
+    
+    while (current_node != NULL) {
+        if (current_node->entity.entity_id == entity.entity_id) {
+            // If we found the entity to remove, update the previous node's next pointer
+            if (previous_node == NULL) {
+                // If the entity is the head of the list, update the head pointer
+                list->head = current_node->next_entity;
             } else {
-                prev->next_entity = curr->next_entity;
+                previous_node->next_entity = current_node->next_entity;
             }
-            free(curr);
+            
+            // Free the memory for the removed node and decrement the list's size
+            free(current_node);
             list->size--;
             return;
         }
-        prev = curr;
-        curr = curr->next_entity;
+        
+        // Update the current and previous nodes
+        previous_node = current_node;
+        current_node = current_node->next_entity;
     }
 }
+
+
 
