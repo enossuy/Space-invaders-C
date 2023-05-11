@@ -63,22 +63,10 @@ void init_sprites(int* shield_img,int* ship_img,int* ship_killed_img,int* invade
 }
 
 
-void display_shields(int shield_img)
+void display_shields(int shield_img, int SHIELD_WIDTH, int SHIELD_HEIGHT )
 {   
     
-    SHIELD_WIDTH = malloc(sizeof(int));
-    SHIELD_HEIGHT = malloc(sizeof(int));
-    if (SHIELD_WIDTH == NULL || SHIELD_HEIGHT == NULL) {
-        fprintf(stderr, "Error: Failed to allocate memory for SHIELD_WIDTH or SHIELD_HEIGHT\n");
-        exit(1);
-    }
-    tailleLutin(shield_img, SHIELD_WIDTH, SHIELD_HEIGHT);
-    if (SHIELD_WIDTH == NULL || SHIELD_HEIGHT == NULL) {
-        fprintf(stderr, "Error: SHIELD_WIDTH or SHIELD_HEIGHT is a NULL pointer\n");
-        exit(1);
-    }
-    
-    int shield_total_width = (*SHIELD_WIDTH) * SHIELDS;
+    int shield_total_width = SHIELD_WIDTH * SHIELDS;
     int space_left = SCREEN_WIDTH - shield_total_width;
     int even_space = space_left/GAPS_BTWN_SHIELDS; // 4 gaps
     shield[0][0] = even_space;
@@ -91,7 +79,7 @@ void display_shields(int shield_img)
     {
         
         if(i < (SHIELDS - 1)){
-            shield[i+1][0] = shield[i][0] + (*SHIELD_WIDTH) + even_space; // distance apart
+            shield[i+1][0] = shield[i][0] + SHIELD_WIDTH + even_space; // distance apart
             shield[i+1][1] = SHIELD_Y;
             shield[i+1][2] = SHIELD_MAX_LIFE;
         }
@@ -193,7 +181,37 @@ void move_ship(int ship_img, entity_t* Ship, int direction)
     afficherLutin(ship_img,Ship->x_coordinates,Ship->y_coordinates);
 }
 
+void init_missiles(int missile_img, int ship_x, int ship_y, entity_list_t* missiles,char key, evenement event)
+{
+        if (key=='r' && event== toucheBas){
+        push_to_head(missiles,ship_x,ship_y,missile_img,0);
+        }
+    
+}
+void display_missiles(entity_list_t* missiles)
+{
+    
+        Node_t *missile = missiles->head;
+            while (missile != NULL)
+            {
+                afficherLutin(missile->entity.entity_id,missile->entity.x_coordinates,missile->entity.y_coordinates);
+                missile->entity.y_coordinates -= INVADERS_DY;
 
+                missile = missile->next_entity;
+                
+            }
+}
+/*
+void move_missiles(entity_list_t* missiles_list )
+{
+     Node_t* missile = missiles_list->head;
+    while(missile != NULL)
+    {
+        missile->entity.y_coordinates -= INVADERS_DY;
+        missile= missile->next_entity;
+    }
+}
+*/
 
 int main(){
     
@@ -201,6 +219,17 @@ int main(){
         entity_t ship;
         int* SHIP_HEIGHT=malloc(sizeof(int));
         int* SHIP_WIDTH= malloc(sizeof(int));
+        if (SHIP_WIDTH == NULL || SHIP_HEIGHT == NULL) {
+            fprintf(stderr, "Error: Failed to allocate memory for SHIP_WIDTH or SHIP_HEIGHT\n");
+            exit(1);
+        }
+        int* SHIELD_HEIGHT=malloc(sizeof(int));
+        int* SHIELD_WIDTH= malloc(sizeof(int));
+        if (SHIELD_WIDTH == NULL || SHIELD_HEIGHT == NULL) {
+            fprintf(stderr, "Error: Failed to allocate memory for SHIELD_WIDTH or SHIELD_HEIGHT\n");
+            exit(1);
+        }
+        
         ship.x_coordinates = (SCREEN_WIDTH / 2) - ((*SHIP_WIDTH) / 2);
         ship.y_coordinates = (SCREEN_HEIGHT - ((*SHIP_HEIGHT) + 20));
         int shield_img;
@@ -215,22 +244,33 @@ int main(){
         int invader_3_img_2;
         int missile_img;
         int direction= 1;
-        entity_list_t missiles;
+        entity_list_t* missiles;
+        missiles = (entity_list_t*) malloc(sizeof(entity_list_t));
         
         init_sprites(&shield_img, &ship_img, &ship_killed_img, &invader_killed_img, &invader_1_img_1, &invader_1_img_2, &invader_2_img_1, &invader_2_img_2, &invader_3_img_1, &invader_3_img_2, &missile_img);
         entity_list_t* invaders_list = init_invaders( invader_1_img_1, invader_1_img_2, invader_2_img_1, invader_2_img_2, invader_3_img_1, invader_3_img_2,&Invaders, direction);
+        tailleLutin(shield_img, SHIELD_WIDTH, SHIELD_HEIGHT);
+        if (SHIELD_WIDTH == NULL || SHIELD_HEIGHT == NULL) {
+            fprintf(stderr, "Error: SHIELD_WIDTH or SHIELD_HEIGHT is a NULL pointer\n");
+            exit(1);
+        }
+        tailleLutin(ship_img, SHIP_WIDTH, SHIP_HEIGHT);
+        if (SHIP_WIDTH == NULL || SHIP_HEIGHT == NULL) {
+            fprintf(stderr, "Error: SHIP_WIDTH or SHIP_HEIGHT is a NULL pointer\n");
+            exit(1);
+        }   
         while (1){
         char key='u';
         evenement event;
         rectanglePlein (0, 0, SCREEN_WIDTH,  SCREEN_HEIGHT,  COULEUR_NOIR);
         display_invaders(*invaders_list );
-        display_shields(shield_img);
+        display_shields(shield_img,*SHIELD_WIDTH,*SHIELD_HEIGHT);
 //         display_ship(ship_img);
         
         lireEvenement(&event, &key, NULL);
-        if (key== 'r') {
-            push_to_head(&missiles,ship.x_coordinates,ship.y_coordinates,missile_img,0);
-        }
+        init_missiles(missile_img, ship.x_coordinates +20, ship.y_coordinates, missiles,key,event);
+        display_missiles(missiles);
+//         move_missiles(&missiles);
         if (key=='g' && event== toucheBas){
             move_ship(ship_img, &ship, -1);
         }
@@ -240,7 +280,7 @@ int main(){
         else { move_ship(ship_img, &ship, 0);}
         majSurface();
         move_invaders(invaders_list);
-        usleep(300000);
+        usleep(100000);
         if (event==quitter) break;
         }
         fermerSurface();
