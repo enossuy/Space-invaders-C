@@ -6,6 +6,8 @@
 typedef struct entity {
     int x_coordinates;
     int y_coordinates;
+    int width;
+    int height;
     int entity_id;
     int color;
     int points;
@@ -37,7 +39,7 @@ entity_list_t* createLinkedList();
 bool isEmpty(entity_list_t* list);
 void push_to_head(entity_list_t* list, int x, int y, int id, int directory);
 
-void pop(entity_list_t list, int entity) ;
+void pop(entity_list_t* list, int x, int y) ;
 
 void addToEnd(entity_list_t* list, int x, int y, int id,int dir);
 

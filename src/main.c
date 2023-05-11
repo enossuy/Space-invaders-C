@@ -1,6 +1,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <unistd.h>
 #include "../Listechainee/Listechainee.h"
 #include "Graphique/libgraph.h"
@@ -33,17 +34,11 @@
 int invaders_rows=5;
 
 
-int* SHIELD_WIDTH= NULL;
-int* SHIELD_HEIGHT= NULL;
-int* SHIP_WIDTH= NULL;
-int* SHIP_HEIGHT= NULL;
-int* INVADER_WIDTH= NULL;
-int* INVADER_HEIGHT= NULL;
-int shield[SHIELDS][SHIELD_DATA]={0};
-entity_t ship; 
-int ship_health = 3;
-entity_t Invaders;
 
+
+
+entity_t Invaders;
+int shield[SHIELDS][SHIELD_DATA];
 
 
 
@@ -63,7 +58,7 @@ void init_sprites(int* shield_img,int* ship_img,int* ship_killed_img,int* invade
 }
 
 
-void display_shields(int shield_img, int SHIELD_WIDTH, int SHIELD_HEIGHT )
+void display_shields(int shield_img, int SHIELD_WIDTH, int shield[SHIELDS][SHIELD_DATA] )
 {   
     
     int shield_total_width = SHIELD_WIDTH * SHIELDS;
@@ -139,19 +134,22 @@ void move_invaders(entity_list_t* invaders_list)
         switch (invader->entity.direction)
         {
             case 1:
-                invader->entity.x_coordinates += INVADERS_DX;
-                if (invader->entity.x_coordinates >= SCREEN_WIDTH){
+              
+                if (invader->entity.x_coordinates + INVADERS_DX >= SCREEN_WIDTH - 30){
                     move_invaders_down(invaders_list);
                     return;
                 }
+                invader->entity.x_coordinates += INVADERS_DX;
                 invader = invader->next_entity;
                 break;
             case -1:
-                invader->entity.x_coordinates -= INVADERS_DX;
-                if (invader->entity.x_coordinates <= 0){
+                
+                if (invader->entity.x_coordinates - INVADERS_DX <= 20){
+                    invader->entity.x_coordinates -= INVADERS_DX;
                     move_invaders_down(invaders_list);
                     return;
                 }
+                invader->entity.x_coordinates -= INVADERS_DX;
                 invader = invader->next_entity;
                 break;
             default:
@@ -188,7 +186,7 @@ void init_missiles(int missile_img, int ship_x, int ship_y, entity_list_t* missi
         }
     
 }
-void display_missiles(entity_list_t* missiles)
+void move_missiles(entity_list_t* missiles)
 {
     
         Node_t *missile = missiles->head;
@@ -212,26 +210,53 @@ void move_missiles(entity_list_t* missiles_list )
     }
 }
 */
+/*
+bool invader_shield_collision(entity invader, int shields[i][SHIELD_DATA]  )
+        
+        bool b = false;
+        if (invader.x_coordinates == shields[i][0] && invader.y_coordinates == shields[i][1] ){
+            printf("ok\n");
+            b = true;
+        }
+    return b;
+}
+*/
+
+void invader_missile_collision(entity_list_t* invaders_list, entity_list_t* missiles_list){
+    Node_t *missile = missiles_list->head;
+    Node_t *invader = invaders_list->head;
+    while(invader!=NULL)
+    {
+        while(missile!=NULL)
+        {
+            if (hitbox_test(invader->entity.x_coordinates, invader->entity.y_coordinates, invader->entity.height, invader->entity.width , missile->entity.x_coordinates,missile->entity.y_coordinates,missile->entity.height, missile->entity.width ))
+            {
+                pop(invaders_list,invader->entity.x_coordinates,invader->entity.y_coordinates);
+                pop(missiles_list,missile->entity.x_coordinates, missile->entity.y_coordinates);
+               
+            }
+        }
+    }
+}
+
+
+bool hitbox_test(int x1, int y1, int height1, int width1, int x2, int y2, int height2, int width2)
+{   bool test=false;
+    if ( ((((x1<=x2+width2 && x1>=x2) || (x1+width1<=x2+width2 && x1+width1>=x2)) && ((y1<=y2+height2 && y1>=y2) || (y1+height1<=y2+height2 && y1+height1>=y2)))) ){ test=true;}
+    return test;
+    
+}
+
 
 int main(){
     
         creerSurface( SCREEN_WIDTH, SCREEN_HEIGHT, "Space Invaders");
         entity_t ship;
-        int* SHIP_HEIGHT=malloc(sizeof(int));
-        int* SHIP_WIDTH= malloc(sizeof(int));
-        if (SHIP_WIDTH == NULL || SHIP_HEIGHT == NULL) {
-            fprintf(stderr, "Error: Failed to allocate memory for SHIP_WIDTH or SHIP_HEIGHT\n");
-            exit(1);
-        }
-        int* SHIELD_HEIGHT=malloc(sizeof(int));
-        int* SHIELD_WIDTH= malloc(sizeof(int));
-        if (SHIELD_WIDTH == NULL || SHIELD_HEIGHT == NULL) {
-            fprintf(stderr, "Error: Failed to allocate memory for SHIELD_WIDTH or SHIELD_HEIGHT\n");
-            exit(1);
-        }
         
-        ship.x_coordinates = (SCREEN_WIDTH / 2) - ((*SHIP_WIDTH) / 2);
-        ship.y_coordinates = (SCREEN_HEIGHT - ((*SHIP_HEIGHT) + 20));
+        int SHIELD_HEIGHT=0;
+        int SHIELD_WIDTH= 0;
+        int ship_health = 3;
+        
         int shield_img;
         int ship_img;
         int ship_killed_img;
@@ -249,27 +274,21 @@ int main(){
         
         init_sprites(&shield_img, &ship_img, &ship_killed_img, &invader_killed_img, &invader_1_img_1, &invader_1_img_2, &invader_2_img_1, &invader_2_img_2, &invader_3_img_1, &invader_3_img_2, &missile_img);
         entity_list_t* invaders_list = init_invaders( invader_1_img_1, invader_1_img_2, invader_2_img_1, invader_2_img_2, invader_3_img_1, invader_3_img_2,&Invaders, direction);
-        tailleLutin(shield_img, SHIELD_WIDTH, SHIELD_HEIGHT);
-        if (SHIELD_WIDTH == NULL || SHIELD_HEIGHT == NULL) {
-            fprintf(stderr, "Error: SHIELD_WIDTH or SHIELD_HEIGHT is a NULL pointer\n");
-            exit(1);
-        }
-        tailleLutin(ship_img, SHIP_WIDTH, SHIP_HEIGHT);
-        if (SHIP_WIDTH == NULL || SHIP_HEIGHT == NULL) {
-            fprintf(stderr, "Error: SHIP_WIDTH or SHIP_HEIGHT is a NULL pointer\n");
-            exit(1);
-        }   
+        tailleLutin(shield_img, &SHIELD_WIDTH, &SHIELD_HEIGHT);
+        
+        tailleLutin(ship_img, &ship.width, &ship.height);
+        ship.x_coordinates = (SCREEN_WIDTH / 2) - (ship.width / 2);
+        ship.y_coordinates = (SCREEN_HEIGHT - (ship.height) );
         while (1){
         char key='u';
         evenement event;
         rectanglePlein (0, 0, SCREEN_WIDTH,  SCREEN_HEIGHT,  COULEUR_NOIR);
         display_invaders(*invaders_list );
-        display_shields(shield_img,*SHIELD_WIDTH,*SHIELD_HEIGHT);
+        display_shields(shield_img,SHIELD_WIDTH,shield[SHIELDS][SHIELD_DATA]);
 //         display_ship(ship_img);
-        
         lireEvenement(&event, &key, NULL);
         init_missiles(missile_img, ship.x_coordinates +20, ship.y_coordinates, missiles,key,event);
-        display_missiles(missiles);
+        move_missiles(missiles);
 //         move_missiles(&missiles);
         if (key=='g' && event== toucheBas){
             move_ship(ship_img, &ship, -1);
@@ -280,6 +299,8 @@ int main(){
         else { move_ship(ship_img, &ship, 0);}
         majSurface();
         move_invaders(invaders_list);
+
+//         if (invader_shield_collision( invader,  shields[0][SHIELD_DATA] )== )
         usleep(100000);
         if (event==quitter) break;
         }
@@ -287,6 +308,17 @@ int main(){
         
     return 0;
 }
+
+
+/* while(monstre!=NULL)
+ * {
+ *  while(missile!=NULL)
+ *  {
+ *      if(hitbox)
+ *          {
+ *              pop(monstre);
+ *              pop(missile);
+ *              }
 /*
 void init(){
     init_ship();

@@ -66,26 +66,23 @@ void addToEnd(entity_list_t* list, int x, int y, int id, int dir) {
 }
 
 
-void pop(entity_list_t list, int entity) {
-    Node_t* curr_node = list.head;
-    Node_t* prev_node = NULL;
+void pop(entity_list_t* list, int x, int y) {
+    Node_t* curr = list->head;
+    Node_t* prev = NULL;
 
-    // Traverse the list to find the node with the matching entity ID
-    while (curr_node != NULL && curr_node->entity.points != entity) {
-        prev_node = curr_node;
-        curr_node = curr_node->next_entity;
-    }
-
-    // If a node with the matching entity ID was found, remove it from the list
-    if (curr_node != NULL) {
-        if (prev_node == NULL) {
-            // If the node to be removed is the head of the list
-            list.head = curr_node->next_entity;
-        } else {
-            // If the node to be removed is not the head of the list
-            prev_node->next_entity = curr_node->next_entity;
+    while (curr != NULL) {
+        if (curr->entity.x_coordinates == x && curr->entity.y_coordinates == y) {
+            if (prev == NULL) { // Case where the first node is to be removed
+                list->head = curr->next_entity;
+            } else {
+                prev->next_entity = curr->next_entity;
+            }
+            free(curr);
+            list->size--;
+            return;
         }
-        free(curr_node);
-        list.size--;
+        prev = curr;
+        curr = curr->next_entity;
     }
 }
+
