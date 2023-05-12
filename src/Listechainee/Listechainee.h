@@ -9,15 +9,8 @@ typedef struct entity {
     int width;
     int height;
     int entity_id;
-    int direction; /* 1 for right, -1 for left */
-    int health; 
-    unsigned int killed;
-    int state;
-    int state_speed;
-    int state_time;
-    int alive;
-    int shots;
-    int level;
+    int direction; /* 1 for right, -1 for left, 0 for static */
+    int health;
 } entity_t;
 
 typedef struct Node {

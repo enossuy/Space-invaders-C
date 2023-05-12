@@ -6,30 +6,44 @@
 
 
 entity_list_t* createLinkedList() {
-    entity_list_t* list = (entity_list_t*)malloc(sizeof(entity_list_t));
+    entity_list_t* list = (entity_list_t*)malloc(sizeof(entity_list_t)); //Creates a new linked list by allocating memory for it
+
     if (list == NULL) {
         fprintf(stderr, "Error: Unable to allocate memory for the linked list\n");
         exit(EXIT_FAILURE);
     }
-    list->head = NULL;
-    list->size = 0;
+    list->head = NULL;  //setting its head to NULL
+    list->size = 0;     //setting its size to NULL
     return list;
 }
 
 bool isEmpty(entity_list_t* list) {
     return (list->size == 0);
 }
+
+
+
+// Adds a new entity to the beginning of the linked list
 void push_to_head(entity_list_t* list, int x, int y, int id, int directory) {
+
+    // Allocate memory for the new node
     Node_t* newNode = malloc(sizeof(Node_t));
+
+    // Set the attributes of the new entity
     newNode->entity.x_coordinates = x;
     newNode->entity.y_coordinates = y;
     newNode->entity.entity_id = id;
     newNode->entity.direction = directory;
+
+    // Set the next pointer of the new node to the current head of the list
     newNode->next_entity = list->head;
+
+    // Set the head of the list to the new node
     list->head = newNode;
+
+    // Increment the size of the list
     list->size++;
 }
-
 
 
 
