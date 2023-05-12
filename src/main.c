@@ -2,12 +2,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
-#include <time.h>
-
 #include <unistd.h>
+#include <time.h>
 #include "../Listechainee/Listechainee.h"
 #include "Graphique/libgraph.h"
-#include <SDL/SDL_ttf.h>
 
 #define SCREEN_WIDTH 800 
 #define SCREEN_HEIGHT 800
@@ -29,10 +27,10 @@
 #define MISSILE_IMG_FILE "../Lutins/invader_missile.bmp"
 #define INVADER_KILLED_IMG_FILE "../Lutins/invader_monstre_bouillie.bmp"
 #define BOMB_IMG_FILE "../Lutins/invader_bombe.bmp"
-#define INVADERS_DX 3
-#define INVADERS_DY 8
+#define INVADERS_DX 1
+#define INVADERS_DY 6
 #define INVADERS_PER_ROW 12
-
+#define MISSILE_STARTING_POSITION 18
 
 int invaders_rows=5;
 
@@ -43,15 +41,9 @@ int invaders_rows=5;
 
 
 
-void starting_screen()
-{
-    creerSurface();
-    chargerSurface();
-}
 
 
-
-void init_sprites(int* shield_img,int* ship_img,int* ship_killed_img,int* invader_killed_img,int* invader_1_img_1,int* invader_1_img_2,int* invader_2_img_1,int* invader_2_img_2,int* invader_3_img_1,int* invader_3_img_2,int* missile_img, int* bomb_img)
+void init_sprites(int* shield_img,int* ship_img,int* ship_killed_img,int* invader_killed_img,int* invader_1_img_1,int* invader_1_img_2,int* invader_2_img_1,int* invader_2_img_2,int* invader_3_img_1,int* invader_3_img_2,int* missile_img,int* bomb_img)
 {
     *shield_img = chargerLutin(SHIELD_IMG_FILE, COULEUR_NOIR);
     *ship_img = chargerLutin(SHIP_IMG_FILE, COULEUR_NOIR);
@@ -96,15 +88,10 @@ void display_shields(int shield_img, int SHIELD_WIDTH, int shield[SHIELDS][SHIEL
 
 
 
-entity_list_t* init_invaders(int invader_1_img_1,int invader_2_img_1,int invader_3_img_1,entity_t* Invaders, int direction)
+entity_list_t* init_invaders(int invader_1_img_1,int invader_1_img_2,int invader_2_img_1,int invader_2_img_2,int invader_3_img_1,int invader_3_img_2,entity_t* Invaders, int direction)
 {
     entity_list_t* invaders_list= createLinkedList();
-    Invaders->direction = 1;
-    Invaders->speed = 1;
-    Invaders->killed = 1;
-    Invaders->state_speed = 1000;
-    Invaders->x_coordinates = 0;
-    Invaders->y_coordinates = 30;
+    
     for(int i = 0 ; i < INVADERS_PER_ROW; i++)
     {
         push_to_head(invaders_list, i * 50 , 200,invader_1_img_1,1);
@@ -114,7 +101,7 @@ entity_list_t* init_invaders(int invader_1_img_1,int invader_2_img_1,int invader
     return invaders_list;
     
 }
-void display_invaders(entity_list_t* init_invaders)
+void display_invaders(entity_list_t init_invaders)
 {
     Node_t *invader = init_invaders.head;
     while(invader != NULL)
@@ -171,119 +158,6 @@ void move_invaders(entity_list_t* invaders_list)
          
 }
 
-/*void move_invaders(entity_list_t* invaders_list)
-{
-    Node_t* invader = invaders_list->head;
-    bool edge_test = false;
-
-    while (invader != NULL)
-    {
-        if (invader->entity.x_coordinates - INVADERS_DX <= 20 && invader->entity.direction == -1)
-        {
-            edge_test = true;
-            break;
-        }
-        if (invader->entity.x_coordinates + INVADERS_DX >= SCREEN_WIDTH - 30 && invader->entity.direction == 1)
-        {
-            edge_test = true;
-            break;
-        }
-
-        switch (invader->entity.direction)
-        {
-            case -1:
-                invader->entity.x_coordinates -= INVADERS_DX;
-                break;
-
-            case 1:
-                invader->entity.x_coordinates += INVADERS_DX;
-                break;
-
-            default:
-                break;
-        }
-
-        invader = invader->next_entity;
-    }
-
-    if (edge_test)
-    {
-        move_invaders_down(invaders_list);
-    }
-}
-*/
-
-/*
-
-void move_invaders(entity_list_t* invaders_list)
-{
-    Node_t* invader = invaders_list->head;
-    while (invader != NULL)
-    {
-        switch (invader->entity.direction)
-        {
-            case 1:
-                if (invader->entity.x_coordinates + INVADERS_DX >= SCREEN_WIDTH - 30)
-                {
-                    move_invaders_down(invaders_list);
-                    return;
-                }
-                invader->entity.x_coordinates += INVADERS_DX;
-                break;
-            case -1:
-                if (invader->entity.x_coordinates - INVADERS_DX <= 20)
-                {
-                    
-                    move_invaders_down(invaders_list);
-                    return;
-                }
-                invader->entity.x_coordinates -= INVADERS_DX;
-                break;
-            default:
-                break;
-        }
-        invader = invader->next_entity;
-    }
-}
-*/
-entity_list_t* init_bombs(int bomb_img, entity_list_t* invaders, entity_list_t* bombs, int bombs_max)
-{
-    entity_list_t* bombs_list= createLinkedList();
-    srand(time(NULL));
-    int i = 0;
-    Node_t* invader = invaders->head;
-    while (i < bombs_max && invader != NULL) {
-        // Generate random x and y coordinates based on invader position
-        int x = invader->entity.x_coordinates + (rand() % 20) - 10; // random offset of up to 10 pixels from invader's x position
-        int y = invader->entity.y_coordinates + 10; // bombs appear just below the invader
-
-        // Create a new bomb entity with the specified image and coordinates
-        entity_t bomb = { .entity_id = bomb_img, .x_coordinates = x, .y_coordinates = y };
-
-        // Add the new bomb entity to the bombs list
-        push_to_head(bombs, bomb.x_coordinates, bomb.y_coordinates, bomb.entity_id,0);
-
-        i++;
-        invader = invader->next_entity;
-    }
-    return bombs_list;
-}
-
-
-void move_bombs(entity_list_t* bombs)
-{
-    
-        Node_t *bomb = bombs->head;
-            while (bomb != NULL)
-            {
-                afficherLutin(bomb->entity.entity_id,bomb->entity.x_coordinates,bomb->entity.y_coordinates);
-                bomb->entity.y_coordinates += INVADERS_DY;
-
-                bomb = bomb->next_entity;
-                
-            }
-}
-
 void move_ship(int ship_img, entity_t* Ship,evenement event, char key)
 { 
     if (key=='g' && event== toucheBas )
@@ -305,35 +179,48 @@ void move_ship(int ship_img, entity_t* Ship,evenement event, char key)
     
     afficherLutin(ship_img,Ship->x_coordinates,Ship->y_coordinates);
 }
-void init_missiles(int missile_img, int ship_x, int ship_y, entity_list_t* missiles, char key, evenement event)
-{
-    if (key == 'r' && event == toucheHaut) {
-        push_to_head(missiles, ship_x + 19, ship_y, missile_img, 0);
-    }
-}
 
+void init_missiles(int missile_img, int ship_x, int ship_y, entity_list_t* missiles,char key, evenement event)
+{
+        if (key=='r' && event== toucheBas){
+            if(missiles->head!=NULL)
+            {
+                if(missiles->head->entity.y_coordinates < 700)
+                    push_to_head(missiles,ship_x,ship_y,missile_img,0);
+            }
+            else
+                push_to_head(missiles,ship_x,ship_y,missile_img,0);
+            
+        }
+    
+}
 void move_missiles(entity_list_t* missiles)
 {
-    Node_t* missile = missiles->head;
-    while (missile != NULL) {
-        missile->entity.y_coordinates -= 20;
-        afficherLutin(missile->entity.entity_id, missile->entity.x_coordinates, missile->entity.y_coordinates);
-        missile = missile->next_entity;
-    }
+    
+        Node_t *missile = missiles->head;
+            while (missile != NULL)
+            {
+                afficherLutin(missile->entity.entity_id,missile->entity.x_coordinates,missile->entity.y_coordinates);
+                missile->entity.y_coordinates -= INVADERS_DY;
+
+                missile = missile->next_entity;
+                
+            }
 }
 
 
-/*
-bool invader_shield_collision(entity invader, int shields[i][SHIELD_DATA]  )
-        
-        bool b = false;
-        if (invader.x_coordinates == shields[i][0] && invader.y_coordinates == shields[i][1] ){
-            printf("ok\n");
-            b = true;
-        }
-    return b;
+
+
+void init_dimensions(entity_list_t* list, int height, int width)
+{
+    Node_t *entity = list->head;
+            while (entity != NULL)
+            {
+                entity->entity.height = height;
+                entity->entity.width = width;
+                entity = entity->next_entity;
+            }
 }
-*/
 
 bool hitbox_test(int x1, int y1, int height1, int width1, int x2, int y2, int height2, int width2)
 {   bool test=false;
@@ -362,22 +249,56 @@ bool hitbox_test(int x1, int y1, int height1, int width1, int x2, int y2, int he
                 )
             ) 
        )
-    
-/*    int x_min = x1 < x2 ? x1 : x2;
-    int x_max = x1 > x2 ? x1 : x2;
-    int y_min = y1 < y2 ? y1 : y2;
-    int y_max = y1 > y2 ? y1 : y2;
-    
-    if (x_min + width1
-  */  
+     
         test=true;
     return test;
     
 }
 
+
+entity_list_t* init_bombs(int bomb_img, entity_list_t* invaders, int width, int height)
+{
+    entity_list_t* bombs_list= createLinkedList();
+    srand(time(NULL));
+    int random_number=5;
+    Node_t* invader = invaders->head;
+    while (invader != NULL) {
+        if (random_number==(rand()%20)){
+        // Generate random x and y coordinates based on invader position
+            int x = invader->entity.x_coordinates + width/2 ; // random offset of up to 10 pixels from invader's x position
+            int y = invader->entity.y_coordinates + height ; // bombs appear just below the invader
+
+        // Create a new bomb entity with the specified image and coordinates
+            entity_t bomb = { .entity_id = bomb_img, .x_coordinates = x, .y_coordinates = y };
+
+        // Add the new bomb entity to the bombs list
+            push_to_head(bombs_list, bomb.x_coordinates, bomb.y_coordinates, bomb.entity_id,0);
+            
+        }
+
+        invader = invader->next_entity;
+    }
+    return bombs_list;
+}
+
+
+void move_bombs(entity_list_t* bombs)
+{
+    
+        Node_t *bomb = bombs->head;
+            while (bomb != NULL)
+            {
+                afficherLutin(bomb->entity.entity_id,bomb->entity.x_coordinates,bomb->entity.y_coordinates);
+                bomb->entity.y_coordinates += 1;
+
+                bomb = bomb->next_entity;
+                
+            }
+}
+
+
 void collision(entity_list_t* list_1, entity_list_t* list_2) {
-    if (list_1->head == NULL || list_2->head == NULL)
-    {
+    if (list_1->head == NULL || list_2->head == NULL) {
         return;
     }
     Node_t* current_node_1 = list_1->head;
@@ -385,17 +306,20 @@ void collision(entity_list_t* list_1, entity_list_t* list_2) {
     while (current_node_1 != NULL) {
         Node_t* current_node_2 = list_2->head;
         while (current_node_2 != NULL) {
-            printf("%d \n",hitbox_test(current_node_1->entity.x_coordinates, current_node_1->entity.y_coordinates, current_node_1->entity.height, current_node_1->entity.width, current_node_2->entity.x_coordinates, current_node_2->entity.y_coordinates, current_node_2->entity.height, current_node_2->entity.width));
             if (hitbox_test(current_node_1->entity.x_coordinates, current_node_1->entity.y_coordinates, current_node_1->entity.height, current_node_1->entity.width, current_node_2->entity.x_coordinates, current_node_2->entity.y_coordinates, current_node_2->entity.height, current_node_2->entity.width)) {
                 // If the entities have collided, remove them from their respective lists
-                printf("%d %d\n",current_node_1->entity.x_coordinates,current_node_1->entity.y_coordinates);
-                pop(list_2, current_node_2->entity);
-                printf("%d %d\n",current_node_2->entity.x_coordinates,current_node_2->entity.y_coordinates);
-                pop(list_1, current_node_1->entity);
                 
+                pop_head(list_1, current_node_1->entity.x_coordinates, current_node_1->entity.y_coordinates);
+                
+                pop_head(list_2, current_node_2->entity.x_coordinates, current_node_2->entity.y_coordinates);
+                
+                return;
+                
+                // Update current_node_2 since we just removed an entity from list_2
+                current_node_2 = list_2->head;
                 
                 // Exit the inner loop since we have already found a collision for this entity
-                return;
+                
             }
             current_node_2 = current_node_2->next_entity;
         }
@@ -404,18 +328,19 @@ void collision(entity_list_t* list_1, entity_list_t* list_2) {
 }
 
 
-
-
-
-
-
 int main(){
     
         creerSurface( SCREEN_WIDTH, SCREEN_HEIGHT, "Space Invaders");
         entity_t ship;
-        entity_t Invaders;
+        
         int SHIELD_HEIGHT=0;
+        int INVADER_WIDTH= 0;
+        int INVADER_HEIGHT=0;
         int SHIELD_WIDTH= 0;
+        int MISSILE_WIDTH=0;
+        int MISSILE_HEIGHT=0;
+        int BOMB_HEIGHT=0;
+        int BOMB_WIDTH=0;
         int ship_health = 3;
         int shield[SHIELDS][SHIELD_DATA];
         int shield_img;
@@ -431,55 +356,50 @@ int main(){
         int missile_img;
         int bomb_img;
         int direction= 1;
+        entity_list_t* missiles;
+        missiles = (entity_list_t*) malloc(sizeof(entity_list_t));
+        entity_t Invaders;
         
         
-        init_sprites(&shield_img, &ship_img, &ship_killed_img, &invader_killed_img, &invader_1_img_1, &invader_1_img_2, &invader_2_img_1, &invader_2_img_2, &invader_3_img_1, &invader_3_img_2, &missile_img, &bomb_img);
-        entity_list_t* invaders_list = init_invaders( invader_1_img_1, invader_2_img_1, invader_3_img_1,&Invaders, direction);
-        if (invaders_list == NULL) {
-        printf("Failed to initialize invaders list.\n");
-        return 1;
-        }
+        init_sprites(&shield_img, &ship_img, &ship_killed_img, &invader_killed_img, &invader_1_img_1, &invader_1_img_2, &invader_2_img_1, &invader_2_img_2, &invader_3_img_1, &invader_3_img_2, &missile_img,&bomb_img);
+        entity_list_t* invaders_list = init_invaders( invader_1_img_1, invader_1_img_2, invader_2_img_1, invader_2_img_2, invader_3_img_1, invader_3_img_2,&Invaders, direction);
+        
         tailleLutin(shield_img, &SHIELD_WIDTH, &SHIELD_HEIGHT);
-        while(invaders_list->head!=NULL){
-        tailleLutin(invader_1_img_1, &invaders_list->head->entity.width, &invaders_list->head->entity.height);
-
+        tailleLutin(invader_1_img_1, &INVADER_WIDTH, &INVADER_HEIGHT);
+        tailleLutin(bomb_img, &BOMB_WIDTH, &BOMB_HEIGHT);
         
-            invaders_list->head=invaders_list->head->next_entity;
-        }
+        init_dimensions(invaders_list, INVADER_HEIGHT, INVADER_WIDTH);
+        entity_list_t* bombs_list=init_bombs( bomb_img, invaders_list, INVADER_WIDTH, INVADER_HEIGHT);
+        init_dimensions(missiles, MISSILE_HEIGHT, MISSILE_WIDTH);
+        init_dimensions(bombs_list, BOMB_HEIGHT, BOMB_WIDTH);
         tailleLutin(ship_img, &ship.width, &ship.height);
-    ship.x_coordinates = (SCREEN_WIDTH / 2) - (ship.width / 2);
-    ship.y_coordinates = (SCREEN_HEIGHT - (ship.height) );
-
-        char key = 'u';
+        ship.x_coordinates = (SCREEN_WIDTH / 2) - (ship.width / 2);
+        ship.y_coordinates = (SCREEN_HEIGHT - (ship.height) );
+        char key;
         evenement event;
-        entity_list_t missiles = *createLinkedList();
-        entity_list_t bombs = *createLinkedList();
-
-    while (1) {
-        rectanglePlein(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, COULEUR_NOIR);
-        display_invaders(*invaders_list);
-        display_shields(shield_img, SHIELD_WIDTH, shield);
+        while (1){
+        
+        rectanglePlein (0, 0, SCREEN_WIDTH,  SCREEN_HEIGHT,  COULEUR_NOIR);
+        display_invaders(*invaders_list );
+        display_shields(shield_img,SHIELD_WIDTH,shield);
+//         display_ship(ship_img);
         lireEvenement(&event, &key, NULL);
-        init_missiles(missile_img, ship.x_coordinates + 19, ship.y_coordinates, &missiles, key, event);
-        while (missiles.head != NULL) {
-            tailleLutin(missile_img, &missiles.head->entity.width, &missiles.head->entity.height);
-            missiles.head = missiles.head->next_entity;
-        }
-        move_missiles(&missiles);
-        bombs = *init_bombs(bomb_img, invaders_list, &bombs, 5);
-        while (bombs.head != NULL) {
-            tailleLutin(bomb_img, &bombs.head->entity.width, &bombs.head->entity.height);
-            bombs.head = bombs.head->next_entity;
-        }
-        move_bombs(&bombs);
+        init_missiles(missile_img, ship.x_coordinates + MISSILE_STARTING_POSITION, ship.y_coordinates, missiles,key,event);
+        move_missiles(missiles);
+        move_bombs(bombs_list);
         move_ship(ship_img, &ship, event, key);
         majSurface();
+        SDL_Delay(20);
         move_invaders(invaders_list);
-        collision(invaders_list, &missiles);
-        usleep(50000);
-        if (event == quitter) break;
-    }
-            
+        collision(missiles,invaders_list);
+        collision(missiles,bombs_list);
+    
+
+//         if (invader_shield_collision( invader,  shields[0][SHIELD_DATA] )== )
+        
+        if (event==quitter) break;
+        }
+        fermerSurface();
         
     return 0;
 }
@@ -494,7 +414,7 @@ int main(){
  *              pop(monstre);
  *              pop(missile);
  *              }
-/*
+*
 void init(){
     init_ship();
     init_shields();
@@ -511,6 +431,5 @@ void init(){
     srand(time(NULL)); // Seed the random number generator with the current time
     int random_number = rand() % (upper_bound + 1);
 */
-
 
 

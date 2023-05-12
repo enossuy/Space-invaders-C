@@ -38,13 +38,7 @@ typedef struct entity_list {
 entity_list_t* createLinkedList();
 bool isEmpty(entity_list_t* list);
 void push_to_head(entity_list_t* list, int x, int y, int id, int directory);
-
-void pop(entity_list_t* list, entity_t entity) ;
-
-void addToEnd(entity_list_t* list, int x, int y, int id,int dir);
-
-
-/* Add a node to the end of the linked list */
+void pop_head(entity_list_t* list, int x, int y);
 
 
 
