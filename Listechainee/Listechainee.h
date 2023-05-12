@@ -9,9 +9,6 @@ typedef struct entity {
     int width;
     int height;
     int entity_id;
-    int color;
-    int points;
-    int speed;
     int direction; /* 1 for right, -1 for left */
     int health; 
     unsigned int killed;

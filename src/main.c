@@ -4,16 +4,15 @@
 #include <stdbool.h>
 #include <unistd.h>
 #include <time.h>
+
 #include "../Listechainee/Listechainee.h"
 #include "Graphique/libgraph.h"
 
 #define SCREEN_WIDTH 800 
 #define SCREEN_HEIGHT 800
 #define SHIELDS 3
-#define SHIELD_DATA 4
 #define SHIELD_Y 570
 #define SHIELD_MAX_LIFE 5
-#define GAPS_BTWN_SHIELDS 3
 #define DX_BTWN_INVADERS 15
 #define INVADER_1_IMG_1_FILE "../Lutins/invader_monstre1_1.bmp"
 #define INVADER_1_IMG_2_FILE "../Lutins/invader_monstre1_2.bmp"
@@ -31,83 +30,68 @@
 #define INVADERS_DY 6
 #define INVADERS_PER_ROW 12
 #define MISSILE_STARTING_POSITION 18
-
-int invaders_rows=5;
-
-
-
-
+#define BOMBS_DY 5
+#define RIGHT 1
+#define LEFT -1
+#define STATIC 0
 
 
 
 
 
 
-void init_sprites(int* shield_img,int* ship_img,int* ship_killed_img,int* invader_killed_img,int* invader_1_img_1,int* invader_1_img_2,int* invader_2_img_1,int* invader_2_img_2,int* invader_3_img_1,int* invader_3_img_2,int* missile_img,int* bomb_img)
+
+
+
+
+void init_sprites(int* shield_img,int* ship_img,int* ship_killed_img,int* invader_killed_img,int* invader_1_img_1,int* invader_2_img_1,int* invader_3_img_1,int* missile_img,int* bomb_img)
 {
     *shield_img = chargerLutin(SHIELD_IMG_FILE, COULEUR_NOIR);
     *ship_img = chargerLutin(SHIP_IMG_FILE, COULEUR_NOIR);
     *ship_killed_img= chargerLutin(SHIP_KILLED_IMG_FILE, COULEUR_NOIR);
     *invader_killed_img= chargerLutin(INVADER_KILLED_IMG_FILE, COULEUR_NOIR);
     *invader_1_img_1= chargerLutin(INVADER_1_IMG_1_FILE, COULEUR_NOIR);
-    *invader_1_img_2= chargerLutin(INVADER_1_IMG_2_FILE, COULEUR_NOIR);
     *invader_2_img_1= chargerLutin(INVADER_2_IMG_1_FILE, COULEUR_NOIR);
-    *invader_2_img_2= chargerLutin(INVADER_2_IMG_2_FILE, COULEUR_NOIR);
     *invader_3_img_1= chargerLutin(INVADER_3_IMG_1_FILE, COULEUR_NOIR);
-    *invader_3_img_2= chargerLutin(INVADER_3_IMG_2_FILE, COULEUR_NOIR);
     *missile_img= chargerLutin(MISSILE_IMG_FILE, COULEUR_NOIR);
     *bomb_img= chargerLutin(BOMB_IMG_FILE, COULEUR_NOIR);
 }
 
-
-void display_shields(int shield_img, int SHIELD_WIDTH, int shield[SHIELDS][SHIELD_DATA] )
-{   
+entity_list_t* init_shields(int shield_img, int width )
+{
+    entity_list_t* shields_list= createLinkedList();
     
-    int shield_total_width = SHIELD_WIDTH * SHIELDS;
+    int shield_total_width = width * SHIELDS;
     int space_left = SCREEN_WIDTH - shield_total_width;
-    int even_space = space_left/GAPS_BTWN_SHIELDS; // 4 gaps
-    shield[0][0] = even_space;
-    shield[0][1] = SHIELD_Y;
-    shield[0][2] = SHIELD_MAX_LIFE;
-    
-
-
-    for (int i = 0; i < SHIELDS; i++)
+    int even_space = space_left/(SHIELDS+1); // 4 gaps
+    for (int i=0; i<SHIELDS; i++)
     {
-        
-        if(i < (SHIELDS - 1)){
-            shield[i+1][0] = shield[i][0] + SHIELD_WIDTH + even_space; // distance apart
-            shield[i+1][1] = SHIELD_Y;
-            shield[i+1][2] = SHIELD_MAX_LIFE;
-        }
-        afficherLutin(shield_img, shield[i][0],shield[i][1]);
+        push_to_head(shields_list, even_space + i*even_space + ((i*width)-(i%1)*width), SHIELD_Y, shield_img, STATIC);
     }
-    
+    return shields_list;
 }
 
 
-
-
-entity_list_t* init_invaders(int invader_1_img_1,int invader_1_img_2,int invader_2_img_1,int invader_2_img_2,int invader_3_img_1,int invader_3_img_2,entity_t* Invaders, int direction)
+entity_list_t* init_invaders(int invader_1_img_1,int invader_2_img_1,int invader_3_img_1, int direction)
 {
     entity_list_t* invaders_list= createLinkedList();
     
     for(int i = 0 ; i < INVADERS_PER_ROW; i++)
     {
-        push_to_head(invaders_list, i * 50 , 200,invader_1_img_1,1);
-        push_to_head(invaders_list, i * 50 , 260,invader_2_img_1,1);
-        push_to_head(invaders_list, i * 50 , 320,invader_3_img_1,1);
+        push_to_head(invaders_list, i * 50 , 200,invader_1_img_1,direction);
+        push_to_head(invaders_list, i * 50 , 260,invader_2_img_1,direction);
+        push_to_head(invaders_list, i * 50 , 320,invader_3_img_1,direction);
     }
     return invaders_list;
     
 }
-void display_invaders(entity_list_t init_invaders)
+void display_entity(entity_list_t list)
 {
-    Node_t *invader = init_invaders.head;
-    while(invader != NULL)
+    Node_t *element = list.head;
+    while(element != NULL)
     { 
-        afficherLutin(invader->entity.entity_id,invader->entity.x_coordinates,invader->entity.y_coordinates);
-        invader = invader->next_entity;
+        afficherLutin(element->entity.entity_id,element->entity.x_coordinates,element->entity.y_coordinates);
+        element = element->next_entity;
     }
 }
 
@@ -256,11 +240,10 @@ bool hitbox_test(int x1, int y1, int height1, int width1, int x2, int y2, int he
 }
 
 
-entity_list_t* init_bombs(int bomb_img, entity_list_t* invaders, int width, int height)
+entity_list_t* init_bombs(int bomb_img, entity_list_t* invaders, int width, int height,int random_number)
 {
     entity_list_t* bombs_list= createLinkedList();
-    srand(time(NULL));
-    int random_number=5;
+    
     Node_t* invader = invaders->head;
     while (invader != NULL) {
         if (random_number==(rand()%20)){
@@ -289,7 +272,7 @@ void move_bombs(entity_list_t* bombs)
             while (bomb != NULL)
             {
                 afficherLutin(bomb->entity.entity_id,bomb->entity.x_coordinates,bomb->entity.y_coordinates);
-                bomb->entity.y_coordinates += 1;
+                bomb->entity.y_coordinates += BOMBS_DY;
 
                 bomb = bomb->next_entity;
                 
@@ -308,7 +291,6 @@ void collision(entity_list_t* list_1, entity_list_t* list_2) {
         while (current_node_2 != NULL) {
             if (hitbox_test(current_node_1->entity.x_coordinates, current_node_1->entity.y_coordinates, current_node_1->entity.height, current_node_1->entity.width, current_node_2->entity.x_coordinates, current_node_2->entity.y_coordinates, current_node_2->entity.height, current_node_2->entity.width)) {
                 // If the entities have collided, remove them from their respective lists
-                
                 pop_head(list_1, current_node_1->entity.x_coordinates, current_node_1->entity.y_coordinates);
                 
                 pop_head(list_2, current_node_2->entity.x_coordinates, current_node_2->entity.y_coordinates);
@@ -326,13 +308,17 @@ void collision(entity_list_t* list_1, entity_list_t* list_2) {
         current_node_1 = current_node_1->next_entity;
     }
 }
-
-
+/*
+void ship_collision(entity_list_t* invaders,entity_list_t* bombs, entity_t )
+{   
+    if  
+}
+*/
 int main(){
     
         creerSurface( SCREEN_WIDTH, SCREEN_HEIGHT, "Space Invaders");
         entity_t ship;
-        
+        int random_number=5;
         int SHIELD_HEIGHT=0;
         int INVADER_WIDTH= 0;
         int INVADER_HEIGHT=0;
@@ -342,35 +328,31 @@ int main(){
         int BOMB_HEIGHT=0;
         int BOMB_WIDTH=0;
         int ship_health = 3;
-        int shield[SHIELDS][SHIELD_DATA];
         int shield_img;
         int ship_img;
         int ship_killed_img;
         int invader_killed_img;
-        int invader_1_img_1;
-        int invader_1_img_2;
+        int invader_1_img_1;;
         int invader_2_img_1;
-        int invader_2_img_2;
         int invader_3_img_1;
-        int invader_3_img_2;
         int missile_img;
         int bomb_img;
-        int direction= 1;
+        int direction= RIGHT;
         entity_list_t* missiles;
         missiles = (entity_list_t*) malloc(sizeof(entity_list_t));
-        entity_t Invaders;
         
-        
-        init_sprites(&shield_img, &ship_img, &ship_killed_img, &invader_killed_img, &invader_1_img_1, &invader_1_img_2, &invader_2_img_1, &invader_2_img_2, &invader_3_img_1, &invader_3_img_2, &missile_img,&bomb_img);
-        entity_list_t* invaders_list = init_invaders( invader_1_img_1, invader_1_img_2, invader_2_img_1, invader_2_img_2, invader_3_img_1, invader_3_img_2,&Invaders, direction);
-        
+        srand(time(NULL));
+        init_sprites(&shield_img, &ship_img, &ship_killed_img, &invader_killed_img, &invader_1_img_1, &invader_2_img_1, &invader_3_img_1, &missile_img,&bomb_img);
+        entity_list_t* invaders_list = init_invaders( invader_1_img_1, invader_2_img_1, invader_3_img_1, direction);
+        entity_list_t* shields_list = init_shields(shield_img, SHIELD_WIDTH);
         tailleLutin(shield_img, &SHIELD_WIDTH, &SHIELD_HEIGHT);
         tailleLutin(invader_1_img_1, &INVADER_WIDTH, &INVADER_HEIGHT);
         tailleLutin(bomb_img, &BOMB_WIDTH, &BOMB_HEIGHT);
-        
+        tailleLutin(shield_img, &SHIELD_WIDTH, &SHIELD_HEIGHT);
         init_dimensions(invaders_list, INVADER_HEIGHT, INVADER_WIDTH);
-        entity_list_t* bombs_list=init_bombs( bomb_img, invaders_list, INVADER_WIDTH, INVADER_HEIGHT);
+        
         init_dimensions(missiles, MISSILE_HEIGHT, MISSILE_WIDTH);
+        entity_list_t* bombs_list=init_bombs( bomb_img, invaders_list, INVADER_WIDTH, INVADER_HEIGHT, random_number);
         init_dimensions(bombs_list, BOMB_HEIGHT, BOMB_WIDTH);
         tailleLutin(ship_img, &ship.width, &ship.height);
         ship.x_coordinates = (SCREEN_WIDTH / 2) - (ship.width / 2);
@@ -380,8 +362,8 @@ int main(){
         while (1){
         
         rectanglePlein (0, 0, SCREEN_WIDTH,  SCREEN_HEIGHT,  COULEUR_NOIR);
-        display_invaders(*invaders_list );
-        display_shields(shield_img,SHIELD_WIDTH,shield);
+        display_entity(*invaders_list );
+        display_entity(*shields_list );
 //         display_ship(ship_img);
         lireEvenement(&event, &key, NULL);
         init_missiles(missile_img, ship.x_coordinates + MISSILE_STARTING_POSITION, ship.y_coordinates, missiles,key,event);
@@ -393,6 +375,9 @@ int main(){
         move_invaders(invaders_list);
         collision(missiles,invaders_list);
         collision(missiles,bombs_list);
+        collision(missiles,shields_list);
+        collision(shields_list,bombs_list);
+
     
 
 //         if (invader_shield_collision( invader,  shields[0][SHIELD_DATA] )== )
