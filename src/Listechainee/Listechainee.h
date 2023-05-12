@@ -10,7 +10,6 @@ typedef struct entity {
     int height;
     int entity_id;
     int direction; /* 1 for right, -1 for left, 0 for static */
-    int health;
 } entity_t;
 
 typedef struct Node {
