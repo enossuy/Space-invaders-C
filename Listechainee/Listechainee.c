@@ -34,7 +34,7 @@ void push_to_head(entity_list_t* list, int x, int y, int id, int directory) {
 
 
 
-void pop_head(entity_list_t* list, int x, int y) {
+void pop_entity(entity_list_t* list, int x, int y) {
     if (list->head == NULL) {
         // If the list is empty, return without doing anything
         return;

@@ -291,9 +291,9 @@ void collision(entity_list_t* list_1, entity_list_t* list_2) {
         while (current_node_2 != NULL) {
             if (hitbox_test(current_node_1->entity.x_coordinates, current_node_1->entity.y_coordinates, current_node_1->entity.height, current_node_1->entity.width, current_node_2->entity.x_coordinates, current_node_2->entity.y_coordinates, current_node_2->entity.height, current_node_2->entity.width)) {
                 // If the entities have collided, remove them from their respective lists
-                pop_head(list_1, current_node_1->entity.x_coordinates, current_node_1->entity.y_coordinates);
+                pop_entity(list_1, current_node_1->entity.x_coordinates, current_node_1->entity.y_coordinates);
                 
-                pop_head(list_2, current_node_2->entity.x_coordinates, current_node_2->entity.y_coordinates);
+                pop_entity(list_2, current_node_2->entity.x_coordinates, current_node_2->entity.y_coordinates);
                 
                 return;
                 
@@ -338,7 +338,7 @@ int main(){
         int missile_img;
         int bomb_img;
         int direction= RIGHT;
-        entity_list_t* missiles;
+        entity_list_t* missiles=NULL;
         missiles = (entity_list_t*) malloc(sizeof(entity_list_t));
         
         srand(time(NULL));
@@ -370,17 +370,15 @@ int main(){
         move_missiles(missiles);
         move_bombs(bombs_list);
         move_ship(ship_img, &ship, event, key);
-        majSurface();
-        SDL_Delay(20);
         move_invaders(invaders_list);
         collision(missiles,invaders_list);
         collision(missiles,bombs_list);
         collision(missiles,shields_list);
         collision(shields_list,bombs_list);
+        majSurface();
+        SDL_Delay(20);
 
     
-
-//         if (invader_shield_collision( invader,  shields[0][SHIELD_DATA] )== )
         
         if (event==quitter) break;
         }
@@ -390,31 +388,5 @@ int main(){
 }
 
 
-/* while(monstre!=NULL)
- * {
- *  while(missile!=NULL)
- *  {
- *      if(hitbox)
- *          {
- *              pop(monstre);
- *              pop(missile);
- *              }
-*
-void init(){
-    init_ship();
-    init_shields();
-    init_invaders();
-    display_shields();
-    display_ship();
-    display_invaders();
-}
-*/
-
-
-/*
-    int upper_bound = 10;
-    srand(time(NULL)); // Seed the random number generator with the current time
-    int random_number = rand() % (upper_bound + 1);
-*/
 
 
