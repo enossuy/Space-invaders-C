@@ -5,7 +5,6 @@
 #include <time.h>
 #include <unistd.h>
 
-#include "../../PC/lib_dyn.h"
 #include "Graphique/libgraph.h"
 #include "Listechainee/Listechainee.h"
 
