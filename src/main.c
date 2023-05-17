@@ -5,6 +5,7 @@
 #include <time.h>
 #include <unistd.h>
 
+#include "../../PC/lib_dyn.h"
 #include "Graphique/libgraph.h"
 #include "Listechainee/Listechainee.h"
 
@@ -323,7 +324,7 @@ int main() {
   tailleLutin(shield_img, &SHIELD_WIDTH, &SHIELD_HEIGHT);
   tailleLutin(ship_img, &ship.width, &ship.height);
   
-  init_dimensions(invaders_list, INVADER_HEIGHT, INVADER_WIDTH)
+  init_dimensions(invaders_list, INVADER_HEIGHT, INVADER_WIDTH);
   
   init_dimensions(missiles, MISSILE_HEIGHT, MISSILE_WIDTH);
   entity_list_t *bombs_list = init_bombs(bomb_img, invaders_list, INVADER_WIDTH,
